@@ -144,6 +144,7 @@ def add_sustained(segs, strokes=None):
     for s in segs:
         for W in SUSTAINED:
             s[f"sus{W}_fwd"] = s[f"sus{W}_bwd"] = 0.0
+        s["wall100_fwd"] = s["wall100_bwd"] = 0.0
     for stroke in strokes:
         seq = []                          # (segment, sign): sign -1 when the way runs backwards
         for w, rev in stroke:
@@ -154,6 +155,17 @@ def add_sustained(segs, strokes=None):
         L = np.array([x["len_m"] for x, _ in seq])
         S = np.r_[0, np.cumsum(L)]
         Z = np.r_[0, np.cumsum([x["grad_avg"] * sg / 100 * x["len_m"] for x, sg in seq])]
+        # 100 m walls across way joins: windows CENTRED on the piece (a wall split into short ways)
+        if S[-1] >= 100:
+            st = np.arange(0, S[-1] - 100 + 1e-6, 5.0)
+            g = (np.interp(st + 100, S, Z) - np.interp(st, S, Z))
+            c = st + 50
+            for i, (x, sg) in enumerate(seq):
+                m = (c >= S[i]) & (c < S[i + 1])
+                if m.any():
+                    f, b = ("fwd", "bwd") if sg > 0 else ("bwd", "fwd")
+                    x[f"wall100_{f}"] = max(x[f"wall100_{f}"], float(max(g[m].max(), 0)))
+                    x[f"wall100_{b}"] = max(x[f"wall100_{b}"], float(max((-g[m]).max(), 0)))
         for W in SUSTAINED:
             if S[-1] < W:
                 continue
@@ -166,6 +178,15 @@ def add_sustained(segs, strokes=None):
                     f, b = ("fwd", "bwd") if sg > 0 else ("bwd", "fwd")
                     x[f"sus{W}_{f}"] = max(x[f"sus{W}_{f}"], up)
                     x[f"sus{W}_{b}"] = max(x[f"sus{W}_{b}"], dn)
+    # A piece can't be steeper over 200/500/1000 m than over its own worst 100 m. Without this cap a
+    # gentle piece inherits the grade of a wall further along the stroke, even where riders turn off
+    # before the wall (Monte Venda: Sent 2/4 -> right -> right was blocked by the wall straight ahead).
+    # Walls split across short ways are caught by wall100 above instead.
+    for s in segs:
+        for d in ("fwd", "bwd"):
+            own = s.get(f"worst100_{d}", 0.0)
+            for W in SUSTAINED:
+                s[f"sus{W}_{d}"] = min(s[f"sus{W}_{d}"], own)
 
 
 def add_way_traffic(segs, cfg):
@@ -269,7 +290,7 @@ def score_segment(s, rel, cfg):
 
         # gradient levels
         scale = sc["rough_grade_scale"] if rough else 1.0
-        vals = {50: s[f"worst50_{d}"], 100: w100}
+        vals = {50: s[f"worst50_{d}"], 100: max(w100, s.get(f"wall100_{d}", 0.0))}
         for W in SUSTAINED:
             vals[W] = s.get(f"sus{W}_{d}", 0.0)
         lv = {W: level(v, [x * scale for x in gr[W]]) for W, v in vals.items()}
