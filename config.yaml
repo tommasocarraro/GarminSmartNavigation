@@ -1,0 +1,71 @@
+# GarminSmartNavigation – all tunables live here.
+# Gradients are in percent, measured on the DEM (TINITALY 10 m), already converted
+# from the rider's barometric limits (see out/calibration/*.json, tools/calibrate.py,
+# tools/dem_vs_baro.py). DEM ≈ barometer for windows ≥ 100 m; at 50 m the DEM is
+# noisier, so 50 m limits are set slightly higher than the barometric ones.
+
+areas:
+  colli_euganei: {bbox: [11.60, 45.23, 11.80, 45.37]}      # lon_min, lat_min, lon_max, lat_max
+  montello:      {bbox: [12.00, 45.75, 12.25, 45.85]}
+  # trentino_veneto: {boundary_relations: [...]}             # added when scaling up
+
+sources:
+  osm_url: https://download.geofabrik.de/europe/italy/nord-est-latest.osm.pbf
+  dem: tinitaly            # tinitaly | glo30  (TINITALY matched the barometer better: 50 m corr 0.66 vs 0.59)
+
+rider:
+  # Derived from 9 rides (163 km of climbing). Paganella DH ride excluded.
+  # Barometric reference: 500 m max 17.5 %, 200 m max 24.5 %, 100 m max 28.7 %,
+  # 50 m walls 29–31 % ridden at 5–6 km/h; 33–37 % only at walking pace.
+  uphill_rock_tolerance: light      # none | light | moderate  (light ≈ mtb:scale 1 uphill OK)
+
+gradient:
+  # window_m: [no_penalty_up_to, mild_up_to, strong_up_to]; above the last value:
+  #   50 m / 100 m  -> wall: hard block uphill (oneway downhill) unless traces show it is climbed
+  #   200 m+        -> very strong penalty only (never blocked on gradient alone)
+  50:   [27, 31, 36]
+  100:  [24, 28, 32]
+  200:  [20, 25, 30]
+  500:  [15, 18, 22]
+  1000: [13, 16, 20]
+  # On rough/technical ground everything moves one level down (mild -> strong ...)
+  rough_shift_level: 1
+  # Rough+steep hard block: uphill on rock/scree/very_bad smoothness and 100 m gradient above this
+  rough_steep_block_100m: 18
+
+technical:
+  mtb_scale_uphill_ok: 1            # mtb:scale (or mtb:scale:uphill) above this = technical uphill
+  mtb_scale_block_uphill: 3         # mtb:scale >= this -> oneway downhill
+  sac_scale_block: [demanding_alpine_hiking, alpine_hiking, difficult_alpine_hiking]
+  bad_smoothness: [very_bad, horrible, very_horrible, impassable]
+  bad_surface: [rock, scree, stone, boulders]
+  bad_visibility: [bad, horrible, no]
+
+traces:
+  # Who is a bike? Speeds measured on DEM flats/descents (gradient < +2 %), moving only.
+  hike_flatdown_kmh: 7.0      # below: walker/runner -> dropped
+  bike_flatdown_kmh: 9.5      # at/above: bike (your rides: ~15 km/h on 0-5 %)
+  car_flatdown_kmh: 35.0      # above: motor vehicle
+  car_p90_kmh: 55.0
+  min_km: 1.0
+  max_median_dt_s: 30         # sparser traces can't be matched to twisty trails
+
+traffic:
+  k: 3                   # confidence weight n/(n+k)
+  min_traces_for_downhill_only_block: 5
+  no_traffic_penalty: 0.15
+
+# Final mapping: cost multiplier -> Garmin road_speed (0-7). Lower speed = avoided.
+road_speed:
+  forestry_track_good: 4      # highway=track grade1-3
+  default_path: 3
+  min_soft: 0                 # worst soft-penalised segment, still routable
+
+map:
+  name: "e-MTB Nord-Est"
+  family_id: 7531
+  product_id: 1
+  contours: true
+  contour_interval_m: 20      # major every 100 m
+  hill_shading: true
+  dem_for_shading: tinitaly

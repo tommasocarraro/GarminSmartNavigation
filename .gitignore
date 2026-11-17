@@ -1,0 +1,13 @@
+# Downloaded data and build outputs (re-creatable by the pipeline)
+cache/
+out/
+vendor/
+
+# Personal ride data (GPS tracks)
+my_rides/
+
+# Python / IDE / OS
+__pycache__/
+*.pyc
+.idea/
+.DS_Store
