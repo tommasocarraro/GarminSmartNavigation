@@ -7,6 +7,7 @@
 areas:
   colli_euganei: {bbox: [11.60, 45.23, 11.80, 45.37]}      # lon_min, lat_min, lon_max, lat_max
   montello:      {bbox: [12.00, 45.75, 12.25, 45.85]}
+  padova_colli:  {bbox: [11.60, 45.22, 12.00, 45.46]}      # Colli + the plain to Vigonza: Edge test from home (traces reuse colli_euganei)
   # trentino_veneto: {boundary_relations: [...]}             # added when scaling up
 
 sources:
@@ -127,6 +128,7 @@ map:
   name: "e-MTB Nord-Est"
   family_id: 7531
   product_id: 1
+  draw_priority: 31          # Trailforks overlay on the Edge is 31, Garmin Cycle Map 30, mkgmap default 25
   contours: true
   contour_interval_m: 20      # major every 100 m
   hill_shading: true

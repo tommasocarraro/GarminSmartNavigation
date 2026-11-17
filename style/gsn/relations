@@ -1,3 +1,7 @@
+# GSN: hiking/MTB route numbers onto their member ways, used as trail labels (lines: gsn:rref)
+type=route & (route=hiking | route=foot | route=mtb) & ref=*
+{ apply { set gsn:rref='$(gsn:rref)/${ref|not-contained:/:gsn:rref}' | '$(gsn:rref)' | '${ref}' } }
+
 # -------------------------------------------------------------------
 # This is the default mkgmap style file for applying rules on
 # OSM relations.  Usually you will set tags on the

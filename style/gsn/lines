@@ -304,6 +304,8 @@ mkgmap:bicycle=yes & (mkgmap:foot=no & mkgmap:car=no & mkgmap:street!=* | mkgmap
 highway=primary                        & ref=* {name '${ref|highway-symbol:box}' ; addlabel '${name}'}
 (highway=secondary | highway=tertiary) & ref=* {name '${ref|highway-symbol:oval}'; addlabel '${name}'}
 
+(highway=path | highway=track | highway=footway | highway=bridleway | highway=cycleway) & gsn:rref=*
+    {name '${name}' | 'Sent ${gsn:rref}'; addlabel 'Sent ${gsn:rref}'}
 name=* {name '${name}'}
 highway=* & ref=* & highway!=motorway & highway!=trunk & highway!=primary & highway!=secondary & highway!=tertiary
     {addlabel '${ref}'}

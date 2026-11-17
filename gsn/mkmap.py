@@ -70,6 +70,7 @@ def build(area: str, cfg: dict, install_basecamp: bool):
             f"--area-name={area}", f"--overview-mapname=gsn_{area}",
             "--code-page=1252", "--lower-case",
             "--add-pois-to-areas", "--show-profiles=1",
+            f"--draw-priority={mc.get('draw_priority', 25)}",
             "--gmapsupp", "--gmapi"]
     hgt = ROOT / "cache/terrain" / area / "hgt"
     if mc.get("hill_shading") and hgt.exists():
